@@ -5,6 +5,8 @@ import email
 
 username = raw_input ('Username: ')
 password = raw_input ('Password: ')
+folder = raw_input ('Folder: ')
+project = raw_input ('Search string for project: ')
 
 mail = imaplib.IMAP4_SSL("imap.gmail.com",993)
 mail.login(username,password)
@@ -13,6 +15,7 @@ mail.select()
 type, data = mail.search(None, 'ALL')
 mail_ids = data[0]
 id_list = mail_ids.split()
+
 
 for num in data[0].split():
     typ, data = mail.fetch(num, '(RFC822)' )
@@ -28,12 +31,14 @@ for num in data[0].split():
             continue
         if part.get('Content-Disposition') is None:
             continue
+        subject = str(email_message).split("Subject: ", 1)[1].split("\nTo:", 1)[0]
+        if project not in subject:
+        	continue
         fileName = part.get_filename()
         if bool(fileName):
-            filePath = os.path.join('/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)', fileName)
+            filePath = os.path.join('/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/'+folder, fileName)
             if not os.path.isfile(filePath) :
                 fp = open(filePath, 'wb')
                 fp.write(part.get_payload(decode=True))
                 fp.close()
-            subject = str(email_message).split("Subject: ", 1)[1].split("\nTo:", 1)[0]
             print('Downloaded "{file}" from email titled "{subject}".'.format(file=fileName, subject=subject))
