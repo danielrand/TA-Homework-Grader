@@ -2,38 +2,49 @@ import imaplib
 import base64
 import os
 import email
+from email.parser import HeaderParser
+
+def get_mostnew_email(messages):
+    # Getting in most recent emails
+    ids = messages[0]  # data is a list.
+    id_list = ids.split()  # ids is a space separated string
+    #latest_ten_email_id = id_list  # get all
+    latest_ten_email_id = id_list[-75:]  # get the latest 10
+    keys = map(int, latest_ten_email_id)
+    news_keys = sorted(keys, reverse=True)
+    str_keys = [str(e) for e in news_keys]
+    return  str_keys
 
 username = raw_input ('Username: ')
 password = raw_input ('Password: ')
 folder = raw_input ('Folder: ')
-project = raw_input ('Search string for project: ')
+projectInput = raw_input ('Search string for project: ')
 
 mail = imaplib.IMAP4_SSL("imap.gmail.com",993)
 mail.login(username,password)
 mail.select()
+mail.select()
+(retcode, messages) =mail.search(None, 'ALL')
+news_mail = get_mostnew_email(messages)
 
-type, data = mail.search(None, 'ALL')
-mail_ids = data[0]
-id_list = mail_ids.split()
-
-
-for num in data[0].split():
-    typ, data = mail.fetch(num, '(RFC822)' )
+for i in news_mail :
+    typ, data = mail.fetch(i, '(RFC822)')
     raw_email = data[0][1]
     raw_email_string = raw_email.decode('utf-8')
     try:
-    	email_message = email.message_from_string(raw_email_string)
+        email_message = email.message_from_string(raw_email_string)
     except Exception as e:
-    	continue
-# downloading attachments
+        continue
     for part in email_message.walk():
         if part.get_content_maintype() == 'multipart':
             continue
         if part.get('Content-Disposition') is None:
             continue
-        subject = str(email_message).split("Subject: ", 1)[1].split("\nTo:", 1)[0]
+        subjectString = str(email_message).split("Subject: ", 1)[1].split("\nTo:", 1)[0]
+        subject = subjectString.lower().replace(" ", "")
+        project = projectInput.lower().replace(" ", "")
         if project not in subject:
-        	continue
+            continue
         fileName = part.get_filename()
         if bool(fileName):
             filePath = os.path.join('/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/'+folder, fileName)
@@ -41,4 +52,4 @@ for num in data[0].split():
                 fp = open(filePath, 'wb')
                 fp.write(part.get_payload(decode=True))
                 fp.close()
-            print('Downloaded "{file}" from email titled "{subject}".'.format(file=fileName, subject=subject))
+            print('Downloaded "{file}"'.format(file=fileName))
