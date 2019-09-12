@@ -17,7 +17,7 @@ def get_mostnew_email(messages):
 
 username = raw_input ('Username: ')
 password = raw_input ('Password: ')
-folder = raw_input ('Folder: ')
+folder = raw_input ('Path of Dirctory to save the projects in: ')
 projectInput = raw_input ('Search string for project: ')
 
 mail = imaplib.IMAP4_SSL("imap.gmail.com",993)
@@ -47,7 +47,7 @@ for i in news_mail :
             continue
         fileName = part.get_filename()
         if bool(fileName):
-            filePath = os.path.join('/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/'+folder, fileName)
+            filePath = os.path.join(folder, fileName)
             if not os.path.isfile(filePath) :
                 fp = open(filePath, 'wb')
                 fp.write(part.get_payload(decode=True))
