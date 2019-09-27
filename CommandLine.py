@@ -2,11 +2,22 @@ import errno
 import subprocess, os, shlex
 from zipfile import ZipFile
 from timeout import timeout, TimeoutError
+# Data File 1: /Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/Bucket/BucketSort_Data.txt
+#/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/Bucket
+# directory = "/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/Proj3";
+# data = '/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/Proj3/HuffmanTreeCoding_Data.txt'
+language = raw_input("Coding language: ")
+data = []
+i = 1
+num_in_files_string = raw_input("Number of input files: ")
+num_in_files = int(num_in_files_string)
 
-directory = "/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/Proj3";
-data = '/Users/danielrand/Desktop/Queens_College_Classes/CS323_35(TA)/Proj3/HuffmanTreeCoding_Data.txt'
-num_out_files = 3
-language = "C++"
+while i <= num_in_files:
+    data.append(raw_input("Data File " + str(i) + ": "))
+    i += 1
+numString = raw_input("Number of output files: ")
+num_out_files = int(numString)
+directory = raw_input("Project Directory: ")
 
 def create_output_file(file_path):
     if not os.path.isfile(file_path):
@@ -22,7 +33,10 @@ def run_code(code, data, output_files):
     except subprocess.CalledProcessError:
         print ('program did not compile')
         return
-    compile_command = './a.out ' + data
+    data_files_string = ""
+    for string in data:
+        data_files_string += string + " "
+    compile_command = './a.out ' + data_files_string
     for out_file in output_files:
         compile_command += ' ' + out_file
     args = shlex.split(compile_command)
