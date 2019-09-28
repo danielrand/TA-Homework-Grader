@@ -24,7 +24,6 @@ num_out_files = parser.parse_args().numOutFiles
 
 print ("\nSearching inbox for " + projectInput + "...\n")
 
-
 # Get most recent 100 emails
 def get_most_recent_emails(messages):
     # Getting in most recent emails
@@ -79,25 +78,23 @@ print ("\nPREPARING TO RUN CODE...\n\n")
 raw_input("\nMake sure to make input files read only! Type any key and press enter to continue after doing so:\n")
 
 
-def create_output_file(file_path):
-    if not os.path.isfile(file_path):
-        fp = open(file_path, 'wb')
-        fp.close()
-
-
 @timeout(10, os.strerror(errno.ETIMEDOUT))
 def run_code(code, data, output_files):
-    compile_command = 'g++ ' + code
-    args = shlex.split(compile_command)
-    try:
-        subprocess.check_output(args)
-    except subprocess.CalledProcessError:
-        print ('program did not compile')
-        return
+    if language == 'C++':
+        compile_command = 'g++ ' + code
+        args = shlex.split(compile_command)
+        try:
+            subprocess.check_output(args)
+        except subprocess.CalledProcessError:
+            print ('program did not compile')
+            return
     data_files_string = ""
     for string in data:
         data_files_string += string + " "
-    compile_command = './a.out ' + data_files_string
+    if language == 'C++':
+        compile_command = './a.out ' + data_files_string
+    else:
+        compile_command = 'java -jar ' + code + ' ' + data_files_string
     for out_file in output_files:
         compile_command += ' ' + out_file
     args = shlex.split(compile_command)
@@ -105,6 +102,12 @@ def run_code(code, data, output_files):
         output = subprocess.check_output(args)
     except subprocess.CalledProcessError:
         print ('program did not work:')
+
+
+def create_output_file(file_path):
+    if not os.path.isfile(file_path):
+        fp = open(file_path, 'wb')
+        fp.close()
 
 
 def process_out_files(filename, output_folder, fileNm):
@@ -117,6 +120,31 @@ def process_out_files(filename, output_folder, fileNm):
         output_files.append(output_file)
         i += 1
     return output_files
+
+
+def run(filename, output_folder, code_path, data):
+    output_files = process_out_files(filename, output_folder, filename)
+    try:
+        run_code(code_path, data, output_files)
+    except TimeoutError:
+        print ("INFINITE LOOP")
+
+
+def process_file(dir, fileNm):
+    code_path = os.path.join(dir, fileNm)
+    name, file_extension = os.path.splitext(code_path)
+    output_folder = os.path.join(directory,'Output')
+    if not os.path.isdir(output_folder):
+        os.makedirs(output_folder)
+    if file_extension == '.cpp' or (file_extension == '.zip' and language == 'Java'):
+        run(filename, output_folder, code_path, data)
+    elif os.path.isdir(code_path):
+        for subdir, dirs, files in os.walk(code_path):
+            for f in files:
+                print os.path.join(subdir, f)
+                name, file_extension = os.path.splitext(f)
+                if file_extension == '.cpp' or (file_extension == '.zip' and language == 'Java'):
+                    run(filename, output_folder, os.path.join(subdir,f), data)
 
 
 def extract_sources_from_zip(directory, file_name):
@@ -136,32 +164,7 @@ def extract_sources_from_zip(directory, file_name):
         print('Contents:')
 
 
-def run(filename, output_folder, code_path, data):
-    output_files = process_out_files(filename, output_folder, filename)
-    try:
-        run_code(code_path, data, output_files)
-    except TimeoutError:
-        print ("INFINITE LOOP")
-
-
-def process_file(dir, fileNm):
-    code_path = os.path.join(dir, fileNm)
-    name, file_extension = os.path.splitext(code_path)
-    output_folder = os.path.join(directory,'Output')
-    if not os.path.isdir(output_folder):
-        os.makedirs(output_folder)
-    if file_extension == '.cpp':
-        run(filename, output_folder, code_path, data)
-    elif os.path.isdir(code_path):
-        for subdir, dirs, files in os.walk(code_path):
-            for f in files:
-                print os.path.join(subdir, f)
-                name, file_extension = os.path.splitext(f)
-                if file_extension == '.cpp':
-                    run(filename, output_folder, os.path.join(subdir,f), data)
-
 # TODO: ADD DATE AND TIME OF SUBMISSION TO OUTPUT REPORT
-# TODO:ADD JAVA FUNCTIONALITY
 if language == 'C++':
     for filename in os.listdir(directory):
         name, file_extension = os.path.splitext(os.path.join(directory,filename))
