@@ -72,7 +72,7 @@ for i in news_mail:
                 fp.write(part.get_payload(decode=True))
                 fp.close()
             print('Downloaded "{file} received on "{date}"'.format(file=fileName, date = email_message['Date']))
-            if '.doc' in fileName: reachedSpecs = True
+            #if '.doc' in fileName: reachedSpecs = True
 
 print ("\nPREPARING TO RUN CODE...\n\n")
 raw_input("\nMake sure to make input files read only! Type any key and press enter to continue after doing so:\n")
@@ -81,7 +81,7 @@ raw_input("\nMake sure to make input files read only! Type any key and press ent
 @timeout(10, os.strerror(errno.ETIMEDOUT))
 def run_code(code, data, output_files):
     if language == 'C++':
-        compile_command = 'g++ ' + code
+        compile_command = 'g++ -std=c++11 ' + code
         args = shlex.split(compile_command)
         try:
             subprocess.check_output(args)
@@ -164,7 +164,6 @@ def extract_sources_from_zip(directory, file_name):
         print('Contents:')
 
 
-# TODO: ADD DATE AND TIME OF SUBMISSION TO OUTPUT REPORT
 if language == 'C++':
     for filename in os.listdir(directory):
         name, file_extension = os.path.splitext(os.path.join(directory,filename))
@@ -174,3 +173,7 @@ if language == 'C++':
 # to run code
 for filename in os.listdir(directory):
     process_file(directory, filename)
+
+    # TODO: ADD ERROR OUTPUT TO SUBMISSION OUTPUT REPORT
+    # TODO: ADD DATE AND TIME OF SUBMISSION TO OUTPUT REPORT
+    # TODO: ADD Optional just run or just download params
